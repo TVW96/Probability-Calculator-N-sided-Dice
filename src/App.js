@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import "./App.css";
+import calculateProbabilities from './calculateProbabilities';
+import ProbabilityGraph from './ProbabilityGraph';
+import Dice from "./Dice.png";
 
 function App() {
-  // State
   const [n, setN] = useState(0);
   const [m, setM] = useState(0);
   const [k, setK] = useState(0);
   const [singleRollResult, setSingleRollResult] = useState([]);
   const [multipleRollResult, setMultipleRollResult] = useState([]);
+  const [probabilities, setProbabilities] = useState([]);
 
-  // Function to simulate single dice roll
   const singleDiceRoll = (n, m) => {
     let diceroll = new Array(m);
     for (let i = 0; i < m; i++) {
@@ -19,7 +21,6 @@ function App() {
     return diceroll;
   }
 
-  // Function to simulate multiple dice rolls
   const multipleDiceRolls = (n, m, k) => {
     let results = [];
     for (let i = 0; i < k; i++) {
@@ -29,12 +30,10 @@ function App() {
         diceroll[j] = roll;
       }
       results.push(diceroll);
-      console.log("diceroll" + diceroll);
     }
     return results;
   }
 
-  // Function to simulate dice rolls
   const diceSimulation = (isSingleRoll) => {
     let n, m, k;
     if (isSingleRoll) {
@@ -48,7 +47,6 @@ function App() {
         alert("Please enter the number of rolls");
       }
     }
-    // error checking
     if (isNaN(n) || isNaN(m) || (!isSingleRoll && isNaN(k))) {
       alert("Please enter valid numbers");
       return;
@@ -60,6 +58,7 @@ function App() {
       let result = multipleDiceRolls(n, m, k);
       setMultipleRollResult(result);
     }
+    setProbabilities(calculateProbabilities(n, m));
   }
 
   return (
@@ -76,6 +75,10 @@ function App() {
           <p>4. Click the "Simulate" button to see the result.</p>
         </div>
 
+        <div className="dice">
+          <img src={Dice} alt="Dice" width={"100px"} />
+        </div>
+
         <div className="container">
           <div className="simulateRoll">
             <h2>Single Roll</h2>
@@ -89,18 +92,8 @@ function App() {
               diceSimulation(true);
             }}>Simulate</button>
 
-            <h2>Probabilities</h2>
-            <div className="probabilities">
-              {calculateProbabilities(n, m).map((probability, sum) => (
-                <div key={sum}>
-                  <p>Sum: {sum}</p>
-                  <p>Probability: {probability}</p>
-                </div>
-              ))}
-            </div>
-
             {/* Display the result of the single dice roll */}
-            <div className="rollResult">
+            <div className="rollResult" id="single">
               <div className="nth-roll">
                 {singleRollResult.map((value, index) => (
                   <div key={index} className="dice-box">{value}</div>
@@ -124,7 +117,6 @@ function App() {
               diceSimulation(false);
             }}>Simulate</button>
 
-
             {/* Display the result of the multiple dice rolls */}
             <div className="rollResult">
               {multipleRollResult.map((roll, rollIndex) => (
@@ -139,12 +131,22 @@ function App() {
               ))}
             </div>
           </div>
-
+          <div className="probabilities">
+            <ProbabilityGraph data={probabilities} />
+            <h2>Probabilities</h2>
+            <div className='probabilities-list'>
+              {probabilities.map(({ sum, probability }) => (
+                <div key={sum}>
+                  <p>Sum: {sum}</p>
+                  <p>Probability: {probability}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
 
 export default App;
